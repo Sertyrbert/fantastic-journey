@@ -1,0 +1,2 @@
+f="salam"
+print(f)
