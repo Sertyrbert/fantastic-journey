@@ -53,8 +53,7 @@ params = {
     'bagging_freq': 1,
     'lambda_l1': 15,
     'lambda_l2': 15,
-    'verbose': 100,
-
+    'verbose': 1000,
 }
 
 # Обучение модели LightGBM
@@ -71,4 +70,3 @@ feature_importance = pd.DataFrame()
 feature_importance['feature'] = X.columns
 feature_importance['importance'] = bst.feature_importance()
 feature_importance = feature_importance.sort_values(by='importance', ascending=False)
-print(feature_importance)
