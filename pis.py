@@ -25,9 +25,7 @@ data['quarter'] = label_encoder.fit_transform(data['quarter'])
 data['frst_pmnt_date'] = (pd.to_datetime(data['frst_pmnt_date']) - pd.Timestamp('2000-01-01')).dt.days
 data['lst_pmnt_date_per_qrtr'] = (pd.to_datetime(data['lst_pmnt_date_per_qrtr']) - pd.Timestamp('2000-01-01')).dt.days
 
-# Преобразование region с использованием One-Hot Encoding
-data = pd.get_dummies(data, columns=['region'])
-
+data['region'] = label_encoder.fit_transform(data['region'])
 
 # Удаление столбца с индексом, если он есть
 if 'Unnamed: 0' in data.columns:
