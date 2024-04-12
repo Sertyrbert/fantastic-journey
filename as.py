@@ -1,2 +1,2 @@
-f="salam"
+f="salam "
 print(f)
