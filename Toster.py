@@ -1,3 +1,5 @@
+import random
+
 import pandas as pd
 import lightgbm as lgb
 from sklearn.model_selection import train_test_split
@@ -5,7 +7,7 @@ from sklearn.metrics import roc_auc_score
 from sklearn.preprocessing import LabelEncoder
 
 # Загрузка данных
-data = pd.read_csv('train.csv')
+data = pd.read_csv('суд.csv')
 
 print(data)
 
@@ -24,7 +26,7 @@ data['frst_pmnt_date'] = (pd.to_datetime(data['frst_pmnt_date']) - pd.Timestamp(
 data['lst_pmnt_date_per_qrtr'] = (pd.to_datetime(data['lst_pmnt_date_per_qrtr']) - pd.Timestamp('2000-01-01')).dt.days
 
 # Преобразование region с использованием One-Hot Encoding
-data = pd.get_dummies(data, columns=['region'])
+
 
 
 # Удаление столбца с индексом, если он есть
@@ -42,31 +44,44 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 train_data = lgb.Dataset(X_train, label=y_train)
 test_data = lgb.Dataset(X_test, label=y_test)
 
-# Определение параметров модели LightGBM
+# Определение параметров модели
 params = {
     'objective': 'binary',
     'metric': 'auc',
-    'num_leaves': 15,
-    'learning_rate': 0.05,
-    'feature_fraction': 0.9,
-    'bagging_fraction': 0.8,
-    'bagging_freq': 1,
-    'lambda_l1': 15,
-    'lambda_l2': 15,
-    'verbose': 1000,
+    'num_leaves': 12,
+    'learning_rate': 0.1,
+    'feature_fraction': 0.001,
+    'bagging_fraction': 0.7,
+    'bagging_freq': 100,
+    'lambda_l1': 10,
+    'lambda_l2': 8,
+    'verbose': 700,
+    'num_threads': 80,
+    'min_gain_to_split': 0.08,
 }
 
-# Обучение модели LightGBM
+# Обучение модели
 num_round = 1000
 bst = lgb.train(params, train_data, num_round, valid_sets=[test_data])
 
-# Предсказание вероятности ухода из НПФ за полгода
+# Предсказание вероятности ухода из НПФ
 y_pred = bst.predict(X_test, num_iteration=bst.best_iteration)
 auc = roc_auc_score(y_test, y_pred)
 print(f'AUC на тестовом наборе: {auc}')
 
-# Пример вывода причины ухода человека из НПФ за полгода
+# Вывод причины ухода человека из НПФ
 feature_importance = pd.DataFrame()
 feature_importance['feature'] = X.columns
 feature_importance['importance'] = bst.feature_importance()
 feature_importance = feature_importance.sort_values(by='importance', ascending=False)
+
+print()
+
+print(feature_importance)
+
+print()
+
+y_pred = bst.predict(X_test, num_iteration=bst.best_iteration)
+
+# Вывод первых 10 прогнозов
+print(y_pred[:10])
