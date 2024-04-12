@@ -44,7 +44,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 train_data = lgb.Dataset(X_train, label=y_train)
 test_data = lgb.Dataset(X_test, label=y_test)
 
-# Определение параметров модели LightGBM
+# Определение параметров модели
 params = {
     'objective': 'binary',
     'metric': 'auc',
@@ -60,22 +60,25 @@ params = {
     'min_gain_to_split': 0.08,
 }
 
-# Обучение модели LightGBM
+# Обучение модели
 num_round = 1000
 bst = lgb.train(params, train_data, num_round, valid_sets=[test_data])
 
-# Предсказание вероятности ухода из НПФ за полгода
+# Предсказание вероятности ухода из НПФ
 y_pred = bst.predict(X_test, num_iteration=bst.best_iteration)
 auc = roc_auc_score(y_test, y_pred)
 print(f'AUC на тестовом наборе: {auc}')
 
-# Пример вывода причины ухода человека из НПФ за полгода
+# Вывод причины ухода человека из НПФ
 feature_importance = pd.DataFrame()
 feature_importance['feature'] = X.columns
 feature_importance['importance'] = bst.feature_importance()
 feature_importance = feature_importance.sort_values(by='importance', ascending=False)
+
 print()
+
 print(feature_importance)
+
 print()
 
 y_pred = bst.predict(X_test, num_iteration=bst.best_iteration)
