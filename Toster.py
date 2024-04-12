@@ -5,3 +5,6 @@ def root (name):
         print('1')
     else:
         print('2')
+
+        what=input('What do you want to do?')
+        print(name)
