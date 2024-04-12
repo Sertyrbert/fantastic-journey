@@ -48,15 +48,16 @@ test_data = lgb.Dataset(X_test, label=y_test)
 params = {
     'objective': 'binary',
     'metric': 'auc',
-    'num_leaves': 15,
+    'num_leaves': 12,
     'learning_rate': 0.05,
-    'feature_fraction': 0.9,
-    'bagging_fraction': 0.8,
-    'bagging_freq': 1,
-    'lambda_l1': 15,
-    'lambda_l2': 15,
-    'verbose': 100,
-
+    'feature_fraction': 0.1,
+    'bagging_fraction': 0.9,
+    'bagging_freq': 100,
+    'lambda_l1': 10,
+    'lambda_l2': 8,
+    'verbose': 700,
+    'num_threads': 80,
+    'min_gain_to_split': 0.08,
 }
 
 # Обучение модели LightGBM
@@ -73,4 +74,11 @@ feature_importance = pd.DataFrame()
 feature_importance['feature'] = X.columns
 feature_importance['importance'] = bst.feature_importance()
 feature_importance = feature_importance.sort_values(by='importance', ascending=False)
+print()
 print(feature_importance)
+print()
+
+y_pred = bst.predict(X_test, num_iteration=bst.best_iteration)
+
+# Вывод первых 10 прогнозов
+print(y_pred[:10])
