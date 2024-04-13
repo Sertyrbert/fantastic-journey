@@ -44,7 +44,7 @@ test_data = lgb.Dataset(X_test, label=y_test)
 params = {
     'objective': 'binary',
     'metric': 'auc',
-    'num_leaves': 27,
+    'num_leaves': 12,
     'learning_rate': 0.01,
     'feature_fraction': 0.4,
     'bagging_fraction': 0.6,
