@@ -11,7 +11,6 @@ import os
 
 nk = 2
 
-# Предварительное определение переменной clf
 for i in range(10):
     model_file = "model_file.txt"
     if os.path.exists(model_file):
@@ -19,7 +18,7 @@ for i in range(10):
         print('I\'m here!')
     else:
         # Загрузка данных
-        data = pd.read_csv('train.csv')
+        data = pd.read_csv('суд.csv')
 
         # Удаление ненужных столбцов
         data.drop(['slctn_nmbr', 'client_id', 'npo_account_id', 'frst_pmnt_date', 'lst_pmnt_date_per_qrtr'], axis=1,
@@ -60,7 +59,14 @@ for i in range(10):
         clf = LGBMClassifier()
         clf.fit(X_train, y_train)
 
-        scorer = make_scorer(fair_loss, greater_is_better=False)
+    # Оценка модели с использованием метрики fair
+    def fair_loss(y_true, y_pred):
+        c = 0.2
+        penalty = np.abs(y_true - y_pred)
+        loss = np.mean(np.log(penalty + c))
+        return loss
+
+    scorer = make_scorer(fair_loss, greater_is_better=False)
     scores = cross_val_score(clf, X_train, y_train, cv=5, scoring=scorer)
 
     nn = int(np.mean(scores))
@@ -74,12 +80,3 @@ for i in range(10):
 
     if nk >= nn:
         clf.booster_.save_model('model_file.txt')
-
-
-    # Оценка модели с использованием метрики fair
-    def fair_loss(y_true, y_pred):
-        c = 0.2
-        penalty = np.abs(y_true - y_pred)
-        loss = np.mean(np.log(penalty + c))
-        return loss
-

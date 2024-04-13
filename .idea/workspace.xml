@@ -4,11 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="14c07d24-55e7-408b-a8fc-3bc93d67f6e8" name="Changes" comment="ИИ ааа">
+    <list default="true" id="14c07d24-55e7-408b-a8fc-3bc93d67f6e8" name="Changes" comment="13.04.2024 11 45">
+      <change afterPath="$PROJECT_DIR$/pfp.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rie.py" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/train.csv" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/train1.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Toster.py" beforeDir="false" afterPath="$PROJECT_DIR$/Toster.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/суд.csv" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -71,21 +74,24 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python.Toster.executor&quot;: &quot;Run&quot;,
-    &quot;Python.main.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;5&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.Toster.executor": "Run",
+    "Python.main.executor": "Run",
+    "Python.pfp.executor": "Run",
+    "Python.pis.executor": "Run",
+    "Python.rie.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "5",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.lookFeel",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\mac39\Documents\GitHub\fantastic-journey" />
@@ -108,7 +114,8 @@
       <option name="presentableId" value="Default" />
       <updated>1712931174209</updated>
       <workItem from="1712931175280" duration="307000" />
-      <workItem from="1712987295041" duration="5952000" />
+      <workItem from="1712987295041" duration="18207000" />
+      <workItem from="1713011900098" duration="9130000" />
     </task>
     <task id="LOCAL-00001" summary="Toster">
       <option name="closed" value="true" />
@@ -166,7 +173,15 @@
       <option name="project" value="LOCAL" />
       <updated>1712964127400</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="13.04.2024 11 45">
+      <option name="closed" value="true" />
+      <created>1712997959107</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1712997959107</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -187,10 +202,14 @@
     <MESSAGE value="Toster" />
     <MESSAGE value="Tostertort" />
     <MESSAGE value="ИИ ааа" />
-    <option name="LAST_COMMIT_MESSAGE" value="ИИ ааа" />
+    <MESSAGE value="13.04.2024 11 45" />
+    <option name="LAST_COMMIT_MESSAGE" value="13.04.2024 11 45" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/fantastic_journey$main.coverage" NAME="main Coverage Results" MODIFIED="1712931273068" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/fantastic_journey$Toster.coverage" NAME="Toster Coverage Results" MODIFIED="1712996109772" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/fantastic_journey$pfp.coverage" NAME="pfp Coverage Results" MODIFIED="1713023299709" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/fantastic_journey$pis.coverage" NAME="pis Coverage Results" MODIFIED="1713023307318" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/fantastic_journey$rie.coverage" NAME="rie Coverage Results" MODIFIED="1713021144481" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/fantastic_journey$Toster.coverage" NAME="Toster Coverage Results" MODIFIED="1713021940825" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
