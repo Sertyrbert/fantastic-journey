@@ -8,7 +8,7 @@ from sklearn.metrics import make_scorer
 from sklearn.model_selection import cross_val_score
 
 # Загрузка данных
-data = pd.read_csv('суд.csv')
+data = pd.read_csv('train.csv')
 
 # Удаление ненужных столбцов
 data.drop(['slctn_nmbr', 'client_id', 'npo_account_id', 'frst_pmnt_date', 'lst_pmnt_date_per_qrtr'], axis=1,
@@ -45,9 +45,8 @@ X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
 # Создание и обучение модели
-for i in range(0, 10, 1):
-    clf = LGBMClassifier()
-    clf.fit(X_train, y_train)
+clf = LGBMClassifier()
+clf.fit(X_train, y_train)
 
 
 # Оценка модели с использованием метрики fair
@@ -67,3 +66,5 @@ print(f'Потери fair: {np.mean(scores)}')
 y_pred = clf.predict(X_test)
 
 print(y_pred)
+
+clf.booster_.save_model("trained_model.txt")
