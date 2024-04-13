@@ -55,7 +55,6 @@ params = {
     'num_threads': 80,
     'min_gain_to_split': 0.08,
 
-
 }
 
 # Обучение модели
