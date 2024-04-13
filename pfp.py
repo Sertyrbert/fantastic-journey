@@ -12,7 +12,7 @@ import os
 nk = 2
 
 # Загрузка данных
-data = pd.read_csv('суд.csv')
+data = pd.read_csv('train.csv')
 
 # Удаление ненужных столбцов
 data.drop(['slctn_nmbr', 'client_id', 'npo_account_id', 'frst_pmnt_date', 'lst_pmnt_date_per_qrtr'], axis=1,
@@ -47,16 +47,21 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
-
+model_file = "trained_model2.txt"
+clf = LGBMClassifier()
 for i in range(10):
-    model_file = "model_file.txt"
+
     if os.path.exists(model_file):
         booster = lgb.Booster(model_file=model_file)
+        booster.refit(X_train, y_train)
+        booster.save_model(model_file)
         print('I\'m here!')
+        wtw = True
     else:
         # Создание и обучение модели
-        clf = LGBMClassifier()
         clf.fit(X_train, y_train)
+        clf.booster_.save_model(model_file)
+        wtw = False
 
     # Оценка модели с использованием метрики fair
     def fair_loss(y_true, y_pred):
@@ -73,9 +78,20 @@ for i in range(10):
     print(f'Потери fair: {np.mean(scores)}')
 
     # Прогнозирование на тестовой выборке
-    y_pred = clf.predict(X_test)
+    if wtw:
+        y_pred = booster.predict(X_test)
+    else:
+        y_pred = clf.predict(X_train)
 
-    print(y_pred)
+#1.5943872861676442 стартовое значение
+#1.594351724714977
+#1.594453417949637
+#1.594453417949637
+#1.5944796212499683
+print(y_pred)
+with open('file.txt', 'a', encoding='utf-8') as f:
+    data = y_pred
+    f.write(data)
 
-    if nk >= nn:
-        clf.booster_.save_model('model_file.txt')
+
+
