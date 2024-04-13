@@ -1,18 +1,14 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, LabelEncoder
-import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout
-from sklearn.metrics import mean_squared_error
+from keras.models import load_model
 
 # Загрузка данных
 data = pd.read_csv('суд.csv')
 
 # Удаление ненужных столбцов
-data.drop(['slctn_nmbr', 'client_id', 'npo_account_id', 'frst_pmnt_date', 'lst_pmnt_date_per_qrtr'], axis=1,
-          inplace=True)
+data.drop(['slctn_nmbr', 'client_id', 'npo_account_id', 'frst_pmnt_date', 'lst_pmnt_date_per_qrtr'], axis=1, inplace=True)
 
 # Заполнение пропущенных значений
 data.fillna(0, inplace=True)
@@ -42,37 +38,14 @@ scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
+# Загрузка натренированной нейросети
+model = load_model('model_file.h5')
 
-# Построение нейронной сети
-def build_model():
-    model = Sequential([
-        Dense(64, input_shape=(X_train.shape[1],), activation='relu'),
-        Dropout(0.5),
-        Dense(32, activation='relu'),
-        Dropout(0.5),
-        Dense(1, activation='sigmoid')
-    ])
-    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-    return model
+# Предсказание на тестовых данных
+y_pred = model.predict(X_test)
 
+# Преобразование предсказаний в бинарный формат
+y_pred_binary = np.round(y_pred).astype(int)
 
-# Обучение модели несколько раз
-n_epochs = 50
-n_runs = 50
-losses = []
-
-for i in range(n_runs):
-    print(f"Training run {i + 1}/{n_runs}")
-
-    model = build_model()
-
-    # Обучение модели
-    history = model.fit(X_train, y_train, epochs=n_epochs, batch_size=32, validation_split=0.2, verbose=0)
-
-    # Оценка модели на тестовом наборе данных
-    loss, accuracy = model.evaluate(X_test, y_test, verbose=0)
-    print(f"Test accuracy for run {i + 1}: {accuracy}")
-    losses.append(loss)
-
-# Вывод среднего значения потерь
-print(f"Average loss: {np.mean(losses)}")
+# Вывод результатов предсказания
+print(y_pred_binary)
