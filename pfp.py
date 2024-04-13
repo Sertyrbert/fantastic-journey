@@ -1,55 +1,61 @@
-import lightgbm as lgb
 import pandas as pd
+import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from lightgbm import LGBMClassifier
+from sklearn.metrics import make_scorer
+from sklearn.model_selection import cross_val_score
 
 # Загрузка данных
-data = pd.read_csv('train.csv')  # Замените 'your_dataset.csv' на путь к вашему файлу данных
+data = pd.read_csv('суд.csv')
 
-# Замените 'target' на имя вашей целевой переменной
-target_column = 'age'
+# Удаление ненужных столбцов
+data.drop(['slctn_nmbr', 'client_id', 'npo_account_id', 'frst_pmnt_date', 'lst_pmnt_date_per_qrtr'], axis=1, inplace=True)
 
-# Предполагается, что целевая переменная находится в столбце с именем 'target'
-X = data.drop(target_column, axis=1)  # Призна
-y = data[target_column]  # Целевая переменная
+# Заполнение пропущенных значений
+data.fillna(0, inplace=True)
 
-# Разделение данных на обучающий и тестовый наборы
+# Преобразование всех категориальных столбцов к строковому типу
+categorical_cols = ['pmnts_type', 'year', 'quarter', 'gender', 'phone_number', 'email', 'lk', 'assignee_npo', 'assignee_ops', 'postal_code', 'region', 'citizen', 'fact_addrss', 'appl_mrkr', 'evry_qrtr_pmnt']
+for col in categorical_cols:
+    data[col] = data[col].astype(str)
+
+# Кодирование категориальных признаков
+label_encoders = {}
+for col in categorical_cols:
+    le = LabelEncoder()
+    data[col] = le.fit_transform(data[col])
+    label_encoders[col] = le
+
+# Разделение данных на признаки и целевую переменную
+X = data.drop('churn', axis=1)
+y = data['churn']
+
+# Разделение данных на обучающую и тестовую выборки
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Создание датасетов для LightGBM
-train_data = lgb.Dataset(X_train, label=y_train)
-test_data = lgb.Dataset(X_test, label=y_test)
+# Масштабирование признаков
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
 
-# Параметры модели LightGBM
-params = {
-    'boosting_type': 'gbdt',  # Тип градиентного бустинга
-    'objective': 'binary',     # Бинарная классификация
-    'metric': 'binary_error',  # Метрика для оценки качества
-    'num_leaves': 31,          # Максимальное количество листьев в дереве
-    'learning_rate': 0.05,     # Скорость обучения
-    'feature_fraction': 0.9,   # Доля признаков, используемых при построении каждого дерева
-    'bagging_fraction': 0.8,    # Доля обучающих данных, используемых при построении каждого дерева
-    'bagging_freq': 5,         # Частота использования bagging
-    'verbose': 0               # Уровень вывода информации
-}
+# Создание и обучение модели
+clf = LGBMClassifier()
+clf.fit(X_train, y_train)
 
-# Обучение модели LightGBM с ранней остановкой
-model = lgb.train(params,
-                  train_data,
-                  num_boost_round=1000,  # Установите достаточно большое число итераций
-                  valid_sets=[test_data],
-                  early_stopping_rounds=10)  # Установите количество итераций для ранней остановки
+# Оценка модели с использованием метрики fair
+def fair_loss(y_true, y_pred):
+    c = 0.2
+    penalty = np.abs(y_true - y_pred)
+    loss = np.mean(np.log(penalty + c))
+    return loss
 
-# Предсказание на тестовом наборе данных
-y_pred = model.predict(X_test, num_iteration=model.best_iteration)
-y_pred_binary = [1 if pred > 0.5 else 0 for pred in y_pred]  # Преобразование вероятностей в бинарные предсказания
+scorer = make_scorer(fair_loss, greater_is_better=False)
+scores = cross_val_score(clf, X_train, y_train, cv=5, scoring=scorer)
 
-# Оценка качества модели
-accuracy = accuracy_score(y_test, y_pred_binary)
-print(f'Accuracy: {accuracy}')
+print(f'Потери fair: {np.mean(scores)}')
 
-# Важность признаков
-feature_importance = pd.DataFrame()
-feature_importance['feature'] = X.columns
-feature_importance['importance'] = model.feature_importance()
-print(feature_importance.sort_values(by='importance', ascending=False))
+# Прогнозирование на тестовой выборке
+y_pred = clf.predict(X_test)
+
+print(y_pred)
