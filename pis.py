@@ -30,11 +30,13 @@ if 'Unnamed: 0' in data.columns:
     data.drop('Unnamed: 0', axis=1, inplace=True)
 
 # Разделение данных на признаки (X) и целевую переменную (y)
-X = data.drop('churn', axis=1)
+X = data.drop(['churn', 'age'], axis=1)
 y = data['churn']
 
 # Разделение данных на обучающий и тестовый наборы
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+
 
 # Подготовка данных для LightGBM
 train_data = lgb.Dataset(X_train, label=y_train)
@@ -54,7 +56,7 @@ params = {
     'verbose': 10,
     'num_threads': 80,
     'min_gain_to_split': 0.08,
-
+    'is_unbalance': True
 }
 
 # Обучение модели
@@ -81,4 +83,4 @@ print()
 y_pred = bst.predict(X_test, num_iteration=bst.best_iteration)
 
 # Вывод первых 10 прогнозов
-print(y_pred[:10])
+print(y_pred[:10] * 100, end="\n\n")
