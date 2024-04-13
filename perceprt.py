@@ -1,4 +1,5 @@
 import numpy as np
+import torch as to
 
 class Perceptron:
     def __init__(self, input_size, learning_rate=0.01, epochs=100):
