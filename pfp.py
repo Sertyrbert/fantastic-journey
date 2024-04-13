@@ -9,10 +9,10 @@ from sklearn.model_selection import cross_val_score
 import lightgbm as lgb
 import os
 
-nk = 2
+nk = 1.59447899
 
 # Загрузка данных
-data = pd.read_csv('train.csv')
+data = pd.read_csv('суд.csv')
 
 # Удаление ненужных столбцов
 data.drop(['slctn_nmbr', 'client_id', 'npo_account_id', 'frst_pmnt_date', 'lst_pmnt_date_per_qrtr'], axis=1,
@@ -49,12 +49,14 @@ X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 model_file = "trained_model2.txt"
 clf = LGBMClassifier()
-for i in range(10):
+for i in range(5):
 
     if os.path.exists(model_file):
+        gt = random.randint(1, 100)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=gt)
         booster = lgb.Booster(model_file=model_file)
         booster.refit(X_train, y_train)
-        booster.save_model(model_file)
+        #booster.save_model(model_file)
         print('I\'m here!')
         wtw = True
     else:
@@ -74,7 +76,9 @@ for i in range(10):
     scores = cross_val_score(clf, X_train, y_train, cv=5, scoring=scorer)
 
     nn = int(np.mean(scores))
-
+    if nn < nk:
+        booster.save_model(model_file)
+        nk = nn
     print(f'Потери fair: {np.mean(scores)}')
 
     # Прогнозирование на тестовой выборке
@@ -91,7 +95,7 @@ for i in range(10):
 print(y_pred)
 with open('file.txt', 'a', encoding='utf-8') as f:
     data = y_pred
-    f.write(data)
+    f.writelines(str(data))
 
 
 
