@@ -1,87 +1,53 @@
-import random
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 
-import pandas as pd
-import lightgbm as lgb
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import roc_auc_score
-from sklearn.preprocessing import LabelEncoder
+# Пример корпуса текста
+corpus = "The quick brown fox jumps over the lazy dog"
 
-# Загрузка данных
-data = pd.read_csv('суд.csv')
+# Токенизация текста
+tokenizer = Tokenizer()
+tokenizer.fit_on_texts([corpus])
+total_words = len(tokenizer.word_index) + 1
 
-print(data)
+# Создание последовательностей
+input_sequences = []
+for line in corpus.split('\n'):
+    token_list = tokenizer.texts_to_sequences([line])[0]
+    for i in range(1, len(token_list)):
+        n_gram_sequence = token_list[:i + 1]
+        input_sequences.append(n_gram_sequence)
 
-data.columns = data.columns.str.replace(' ', '_').str.lower()
+# Подготовка данных для обучения
+max_sequence_len = max([len(x) for x in input_sequences])
+input_sequences = np.array(pad_sequences(input_sequences, maxlen=max_sequence_len, padding='pre'))
+predictors, label = input_sequences[:, :-1], input_sequences[:, -1]
 
-# Создание экземпляра LabelEncoder
-label_encoder = LabelEncoder()
+# Определение модели
+model = Sequential([
+    tf.keras.layers.Embedding(total_words, 64, input_length=max_sequence_len - 1),
+    tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(20)),
+    tf.keras.layers.Dense(total_words, activation='softmax')
+])
 
-# Применение Label Encoding к столбцам client_id и npo_account_id
-data['client_id'] = label_encoder.fit_transform(data['client_id'])
-data['npo_account_id'] = label_encoder.fit_transform(data['npo_account_id'])
-data['quarter'] = label_encoder.fit_transform(data['quarter'])
+model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+model.fit(predictors, label, epochs=100, verbose=1)
 
-# Преобразование дат в числовой формат (количество дней с начала 2000 года)
-data['frst_pmnt_date'] = (pd.to_datetime(data['frst_pmnt_date']) - pd.Timestamp('2000-01-01')).dt.days
-data['lst_pmnt_date_per_qrtr'] = (pd.to_datetime(data['lst_pmnt_date_per_qrtr']) - pd.Timestamp('2000-01-01')).dt.days
+# Генерация текста
+seed_text = "brown fox"
+next_words = 5
 
-# Преобразование region с использованием One-Hot Encoding
-
-
-
-# Удаление столбца с индексом, если он есть
-if 'Unnamed: 0' in data.columns:
-    data.drop('Unnamed: 0', axis=1, inplace=True)
-
-# Разделение данных на признаки (X) и целевую переменную (y)
-X = data.drop('churn', axis=1)
-y = data['churn']
-
-# Разделение данных на обучающий и тестовый наборы
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# Подготовка данных для LightGBM
-train_data = lgb.Dataset(X_train, label=y_train)
-test_data = lgb.Dataset(X_test, label=y_test)
-
-# Определение параметров модели
-params = {
-    'objective': 'binary',
-    'metric': 'auc',
-    'num_leaves': 12,
-    'learning_rate': 0.1,
-    'feature_fraction': 0.001,
-    'bagging_fraction': 0.7,
-    'bagging_freq': 100,
-    'lambda_l1': 10,
-    'lambda_l2': 8,
-    'verbose': 700,
-    'num_threads': 80,
-    'min_gain_to_split': 0.08,
-}
-
-# Обучение модели
-num_round = 1000
-bst = lgb.train(params, train_data, num_round, valid_sets=[test_data])
-
-# Предсказание вероятности ухода из НПФ
-y_pred = bst.predict(X_test, num_iteration=bst.best_iteration)
-auc = roc_auc_score(y_test, y_pred)
-print(f'AUC на тестовом наборе: {auc}')
-
-# Вывод причины ухода человека из НПФ
-feature_importance = pd.DataFrame()
-feature_importance['feature'] = X.columns
-feature_importance['importance'] = bst.feature_importance()
-feature_importance = feature_importance.sort_values(by='importance', ascending=False)
-
-print()
-
-print(feature_importance)
-
-print()
-
-y_pred = bst.predict(X_test, num_iteration=bst.best_iteration)
-
-# Вывод первых 10 прогнозов
-print(y_pred[:10])
+for _ in range(next_words):
+    token_list = tokenizer.texts_to_sequences([seed_text])[0]
+    token_list = pad_sequences([token_list], maxlen=max_sequence_len - 1, padding='pre')
+    predicted = model.predict_classes(token_list, verbose=0)
+    output_word = ""
+    for word, index in tokenizer.word_index.items():
+        if index == predicted:
+            output_word = word
+            break
+    seed_text += " " + output_word
+print(seed_text)
