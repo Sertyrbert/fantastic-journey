@@ -4,15 +4,32 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from lightgbm import LGBMClassifier
-from sklearn.metrics import make_scorer
-from sklearn.model_selection import cross_val_score
+from sklearn.metrics import make_scorer, f1_score
+from sklearn.model_selection import cross_val_score, GridSearchCV
 import lightgbm as lgb
 import os
 
-nk = 1.59447899
+randA = 1
+randB = 1000000
+repeats = 100
+old_score = 0
+train_File = 'train.csv'
+model_file = "trained_model2.txt"
 
+#нужно сделать чтобы через простенький интерфейс заполнялись данные repeats & train_File
+#вот этот у нужно сравнить с file.txt который получается в ходе работы программы, потому что F1 метрика слишком ебейшая какая-то
+#если получится не зафакапить всё, разбить всё на модули
+#Определение ненужных столбцов, соответственно их удаление
+#Вывод удобной статистики в виде какой-нибудь диограммы или какого-то иного простого к пониманию объекта
+
+
+
+with open('all_model_info.txt', 'r+') as file:
+    file.truncate(0)
+with open('file.txt', 'r+') as file:
+    file.truncate(0)
 # Загрузка данных
-data = pd.read_csv('суд.csv')
+data = pd.read_csv(train_File)
 
 # Удаление ненужных столбцов
 data.drop(['slctn_nmbr', 'client_id', 'npo_account_id', 'frst_pmnt_date', 'lst_pmnt_date_per_qrtr'], axis=1,
@@ -38,7 +55,7 @@ for col in categorical_cols:
 X = data.drop('churn', axis=1)
 y = data['churn']
 
-gt = random.randint(1, 100)
+gt = random.randint(randA, randB)
 
 # Разделение данных на обучающую и тестовую выборки
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=gt)
@@ -47,12 +64,11 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
-model_file = "trained_model2.txt"
-clf = LGBMClassifier()
-for i in range(5):
+clf = LGBMClassifier(n_jobs=-1)
+for i in range(repeats):
 
     if os.path.exists(model_file):
-        gt = random.randint(1, 100)
+        gt = random.randint(randA, randB)
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=gt)
         booster = lgb.Booster(model_file=model_file)
         booster.refit(X_train, y_train)
@@ -65,37 +81,42 @@ for i in range(5):
         clf.booster_.save_model(model_file)
         wtw = False
 
-    # Оценка модели с использованием метрики fair
-    def fair_loss(y_true, y_pred):
-        c = 0.2
-        penalty = np.abs(y_true - y_pred)
-        loss = np.mean(np.log(penalty + c))
-        return loss
-
-    scorer = make_scorer(fair_loss, greater_is_better=False)
-    scores = cross_val_score(clf, X_train, y_train, cv=5, scoring=scorer)
-
-    nn = int(np.mean(scores))
-    if nn < nk:
-        booster.save_model(model_file)
-        nk = nn
-    print(f'Потери fair: {np.mean(scores)}')
-
     # Прогнозирование на тестовой выборке
     if wtw:
         y_pred = booster.predict(X_test)
     else:
         y_pred = clf.predict(X_train)
 
-#1.5943872861676442 стартовое значение
-#1.594351724714977
-#1.594453417949637
-#1.594453417949637
-#1.5944796212499683
+
+    param_grid = {
+        'n_estimators': [50, 100, 150],
+        'max_depth': [3, 5, 7]
+    }
+
+    # Создание объекта GridSearchCV
+    grid_search = GridSearchCV(LGBMClassifier(), param_grid, cv=5, n_jobs=4, scoring='f1')
+
+    # Обучение объекта GridSearchCV
+    grid_search.fit(X_train, y_train)
+
+    # Оценка производительности на отложенном тестовом наборе
+    f1_score = grid_search.best_score_
+
+    print('F1 score:', f1_score.mean())
+    if f1_score.mean() > old_score:
+        booster.save_model(model_file)
+        print("Сохранение модели")
+        print()
+        old_score = f1_score.mean()
+        with open('all_model_info.txt', 'a', encoding='utf-8') as f:
+            f.writelines("Новый F1 показатель = " + f"{f1_score:.10f}" + '\n')
+
+
+
 print(y_pred)
 with open('file.txt', 'a', encoding='utf-8') as f:
-    data = y_pred
-    f.writelines(str(data))
+    for item in y_pred:
+        f.write("{:.0f}".format(item) + '\n')
 
 
 

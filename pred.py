@@ -1,11 +1,14 @@
-import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, LabelEncoder
-from keras.models import load_model
+from lightgbm import LGBMClassifier
+import lightgbm as lgb
+import os
+
+train_File = 'суд.csv'
+model_file = "trained_model2.txt"
 
 # Загрузка данных
-data = pd.read_csv('суд.csv')
+data = pd.read_csv(train_File)
 
 # Удаление ненужных столбцов
 data.drop(['slctn_nmbr', 'client_id', 'npo_account_id', 'frst_pmnt_date', 'lst_pmnt_date_per_qrtr'], axis=1, inplace=True)
@@ -30,22 +33,20 @@ for col in categorical_cols:
 X = data.drop('churn', axis=1)
 y = data['churn']
 
-# Разделение данных на обучающую и тестовую выборки
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
 # Масштабирование признаков
 scaler = StandardScaler()
-X_train = scaler.fit_transform(X_train)
-X_test = scaler.transform(X_test)
+X = scaler.fit_transform(X)
 
-# Загрузка натренированной нейросети
-model = load_model('model_file.h5')
+# Загрузка ранее обученной модели
+if os.path.exists(model_file):
+    booster = lgb.Booster(model_file=model_file)
+else:
+    print("Модель не найдена, убедитесь, что она была обучена ранее.")
 
-# Предсказание на тестовых данных
-y_pred = model.predict(X_test)
-
-# Преобразование предсказаний в бинарный формат
-y_pred_binary = np.round(y_pred).astype(int)
-
-# Вывод результатов предсказания
-print(y_pred_binary)
+# Прогнозирование на данных
+if 'booster' in locals():
+    y_pred = booster.predict(X)
+    print(y_pred)
+    with open('file2.txt', 'w', encoding='utf-8') as f:
+        for item in y_pred:
+            f.write("{:.0f}".format(item) + '\n')
